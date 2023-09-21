@@ -7,33 +7,46 @@ import java.math.BigDecimal;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.CsvSource;
 
 class MatriculaTest {
 
-	@Test
+	@ParameterizedTest
+	@CsvSource({
+			"10, 10, 10, 100",
+			"10, 7, 5, 75"
+	})
 	@DisplayName("O aluno aprovado quando média, notas e frequência estão acima do limite")
-	void testQuandoAprovado() throws NullPointerException {
+	void alunosComFrequenciaAcimaENotaAcimaDevemSerAprovado(BigDecimal nota1, BigDecimal nota2, BigDecimal nota3,
+			Integer frequencia)
+			throws NullPointerException {
 		Matricula m = new Matricula();
 
-		m.registrarNota1(BigDecimal.valueOf(10l));
-		m.registrarNota2(BigDecimal.valueOf(10l));
-		m.registrarNota3(BigDecimal.valueOf(10l));
-		m.registrarFrequencia(100);
+		m.registrarNota1(nota1);
+		m.registrarNota2(nota2);
+		m.registrarNota3(nota3);
+		m.registrarFrequencia(frequencia);
 
 		m.consolidarParcialmente();
 
 		Assertions.assertEquals(StatusAprovacao.APR, m.status());
 	}
 
-	@Test
+	@ParameterizedTest
+	@CsvSource({
+			"10, 10, 2, 75",
+			"2, 10, 3, 100"
+	})
 	@DisplayName("Quando o aluno passa por média mas possui uma unidade abaixo de 3")
-	void testQuandoPassaComMenosDeTresEmAlgumaUnidade() throws NullPointerException {
+	void alunosComMenosDeTresEmAlgumaUnidadeEFrequenciaNiveladaDevemFazerRecuperacao(BigDecimal nota1, BigDecimal nota2,
+			BigDecimal nota3, Integer frequencia) throws NullPointerException {
 		Matricula m = new Matricula();
 
-		m.registrarNota1(BigDecimal.valueOf(10.0));
-		m.registrarNota2(BigDecimal.valueOf(10.0));
-		m.registrarNota3(BigDecimal.valueOf(2.0));
-		m.registrarFrequencia(75);
+		m.registrarNota1(nota1);
+		m.registrarNota2(nota2);
+		m.registrarNota3(nota3);
+		m.registrarFrequencia(frequencia);
 
 		m.consolidarParcialmente();
 
@@ -42,7 +55,7 @@ class MatriculaTest {
 
 	@Test
 	@DisplayName("Quando há valores inválidos/não processados de alguma unidade ao fazer a consolidação")
-	void testeValoresInvalidosAntesDaConsolidacao() throws NullPointerException {
+	void valoresInvalidosAntesDaConsolidacaoDevemSurgirExcessao() throws NullPointerException {
 		Matricula m = new Matricula();
 
 		m.registrarNota1(BigDecimal.valueOf(6.0));
@@ -51,75 +64,100 @@ class MatriculaTest {
 		assertThrows(NullPointerException.class, () -> m.consolidarParcialmente());
 	}
 
-	@Test
+	@ParameterizedTest
+	@CsvSource({
+			"3.4, 2, 1, 100",
+			"1.5, 3, 3, 75"
+	})
 	@DisplayName("Quando aluno está abaixo de 3 na média com frequencia acima do limite")
-	void testeAlunoReprovadoPorNotaAbaixoDeTresSomente() {
+	void alunosComNotaAbaixoDeTresEFrequenciaNiveladaDevemFicarDeRecuperacao(BigDecimal nota1, BigDecimal nota2,
+			BigDecimal nota3, Integer frequencia) {
 		Matricula m = new Matricula();
 
-		m.registrarNota1(BigDecimal.valueOf(3.4));
-		m.registrarNota2(BigDecimal.valueOf(2.0));
-		m.registrarNota3(BigDecimal.valueOf(1.0));
-		m.registrarFrequencia(100);
+		m.registrarNota1(nota1);
+		m.registrarNota2(nota2);
+		m.registrarNota3(nota3);
+		m.registrarFrequencia(frequencia);
 
 		m.consolidarParcialmente();
 
 		Assertions.assertEquals(StatusAprovacao.REP, m.status());
 	}
 
-	@Test
+	@ParameterizedTest
+	@CsvSource({
+			"3.4, 7, 5, 74",
+			"3, 8, 8, 0"
+	})
 	@DisplayName("Quando o aluno está acima ou igual à média mas com frequência abaixo do limite")
-	void testeAlunoAbaixoDaFrequenciaEMediaAcima() {
+	void alunosAbaixoDaFrequenciaEMediaAcimaDevemSerReprovadosPorFalta(BigDecimal nota1, BigDecimal nota2,
+			BigDecimal nota3, Integer frequencia) {
 		Matricula m = new Matricula();
 
-		m.registrarNota1(BigDecimal.valueOf(5.0));
-		m.registrarNota2(BigDecimal.valueOf(10.0));
-		m.registrarNota3(BigDecimal.valueOf(6.0));
-		m.registrarFrequencia(60);
+		m.registrarNota1(nota1);
+		m.registrarNota2(nota2);
+		m.registrarNota3(nota3);
+		m.registrarFrequencia(frequencia);
 
 		m.consolidarParcialmente();
 
 		Assertions.assertEquals(StatusAprovacao.REPF, m.status());
 	}
 
-	@Test
-	@DisplayName("Quando o aluno está abaixo da média mas com frequência abaixo do limite")
-	void testeAlunosComFrequenciaEMediaBaixa() {
+	@ParameterizedTest
+	@CsvSource({
+			"3.4, 7, 4, 74",
+			"3, 8, 1, 0"
+	})
+	@DisplayName("Quando o aluno está abaixo da média e com frequência abaixo do limite")
+	void alunosComFrequenciaEMediaBaixaDeveReprovarPorMediaEFalta(BigDecimal nota1, BigDecimal nota2,
+			BigDecimal nota3, Integer frequencia) {
 		Matricula m = new Matricula();
 
-		m.registrarNota1(BigDecimal.valueOf(5.0));
-		m.registrarNota2(BigDecimal.valueOf(1.0));
-		m.registrarNota3(BigDecimal.valueOf(2.0));
-		m.registrarFrequencia(60);
+		m.registrarNota1(nota1);
+		m.registrarNota2(nota2);
+		m.registrarNota3(nota3);
+		m.registrarFrequencia(frequencia);
 
 		m.consolidarParcialmente();
 
 		Assertions.assertEquals(StatusAprovacao.REMF, m.status());
 	}
 
-	@Test
+	@ParameterizedTest
+	@CsvSource({
+			"5, 5, 6, 75",
+			"3, 8, 7, 100"
+	})
 	@DisplayName("Quando o aluno está acima da media parcial e abaixo da media")
-	void testeAlunosComMediaParcial() {
+	void alunosComMediaParcialEFrequenciaEstavelDevemSerAprovadoPorNota(BigDecimal nota1, BigDecimal nota2,
+			BigDecimal nota3, Integer frequencia) {
 		Matricula m = new Matricula();
 
-		m.registrarNota1(BigDecimal.valueOf(5.0));
-		m.registrarNota2(BigDecimal.valueOf(5.0));
-		m.registrarNota3(BigDecimal.valueOf(6.0));
-		m.registrarFrequencia(75);
+		m.registrarNota1(nota1);
+		m.registrarNota2(nota2);
+		m.registrarNota3(nota3);
+		m.registrarFrequencia(frequencia);
 
 		m.consolidarParcialmente();
 
 		Assertions.assertEquals(StatusAprovacao.APRN, m.status());
 	}
 
-	@Test
+	@ParameterizedTest
+	@CsvSource({
+			"5, 5, 6, 74",
+			"5, 5, 5, 5"
+	})
 	@DisplayName("Quando o aluno está acima da media parcial e abaixo da media e abaixo do limite de frequencia")
-	void testeAlunosComMediaParcialEFrequenciaBaixa() {
+	void alunosComMediaParcialEFrequenciaBaixaDevemSerReprovadoPorFalta(BigDecimal nota1, BigDecimal nota2,
+			BigDecimal nota3, Integer frequencia) {
 		Matricula m = new Matricula();
 
-		m.registrarNota1(BigDecimal.valueOf(5.0));
-		m.registrarNota2(BigDecimal.valueOf(5.0));
-		m.registrarNota3(BigDecimal.valueOf(6.0));
-		m.registrarFrequencia(40);
+		m.registrarNota1(nota1);
+		m.registrarNota2(nota2);
+		m.registrarNota3(nota3);
+		m.registrarFrequencia(frequencia);
 
 		m.consolidarParcialmente();
 
